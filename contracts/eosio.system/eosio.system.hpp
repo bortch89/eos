@@ -51,6 +51,7 @@ namespace eosiosystem {
       uint64_t             thresh_activated_stake_time = 0;
       uint16_t             last_producer_schedule_size = 0;
       double               total_producer_vote_weight = 0; /// the sum of all producer votes
+      double               total_producer_votepay_share = 0;
       block_timestamp      last_name_close;
 
       // explicit serialization macro is not necessary, used here only to improve compilation time
@@ -58,12 +59,13 @@ namespace eosiosystem {
                                 (max_ram_size)(total_ram_bytes_reserved)(total_ram_stake)
                                 (last_producer_schedule_update)(last_pervote_bucket_fill)
                                 (pervote_bucket)(perblock_bucket)(total_unpaid_blocks)(total_activated_stake)(thresh_activated_stake_time)
-                                (last_producer_schedule_size)(total_producer_vote_weight)(last_name_close) )
+                                (last_producer_schedule_size)(total_producer_vote_weight)(total_producer_votepay_share)(last_name_close) )
    };
 
    struct producer_info {
       account_name          owner;
       double                total_votes = 0;
+      double                votepay_share = 0; // use long double????
       eosio::public_key     producer_key; /// a packed public key object
       bool                  is_active = true;
       std::string           url;
@@ -77,7 +79,7 @@ namespace eosiosystem {
       void     deactivate()       { producer_key = public_key(); is_active = false; }
 
       // explicit serialization macro is not necessary, used here only to improve compilation time
-      EOSLIB_SERIALIZE( producer_info, (owner)(total_votes)(producer_key)(is_active)(url)
+      EOSLIB_SERIALIZE( producer_info, (owner)(total_votes)(votepay_share)(producer_key)(is_active)(url)
                         (unpaid_blocks)(last_claim_time)(location) )
    };
 
@@ -94,13 +96,14 @@ namespace eosiosystem {
        *  stated.amount * 2 ^ ( weeks_since_launch/weeks_per_year)
        */
       double                      last_vote_weight = 0; /// the vote weight cast the last time the vote was updated
+      time                        last_vote_time = 0;
 
       /**
        * Total vote weight delegated to this voter.
        */
       double                      proxied_vote_weight= 0; /// the total vote weight delegated to this voter as a proxy
       bool                        is_proxy = 0; /// whether the voter is a proxy for others
-
+     
 
       uint32_t                    reserved1 = 0;
       time                        reserved2 = 0;
@@ -109,7 +112,7 @@ namespace eosiosystem {
       uint64_t primary_key()const { return owner; }
 
       // explicit serialization macro is not necessary, used here only to improve compilation time
-      EOSLIB_SERIALIZE( voter_info, (owner)(proxy)(producers)(staked)(last_vote_weight)(proxied_vote_weight)(is_proxy)(reserved1)(reserved2)(reserved3) )
+      EOSLIB_SERIALIZE( voter_info, (owner)(proxy)(producers)(staked)(last_vote_weight)(last_vote_time)(proxied_vote_weight)(is_proxy)(reserved1)(reserved2)(reserved3) )
    };
 
    typedef eosio::multi_index< N(voters), voter_info>  voters_table;

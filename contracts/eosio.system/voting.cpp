@@ -162,6 +162,13 @@ namespace eosiosystem {
          new_vote_weight += voter->proxied_vote_weight;
       }
 
+      double voteshare = 0;
+      if( voter->last_vote_weight > 0 ) {
+         voteshare = voter->last_vote_weight * ( now() - voter->last_vote_time ); // check that time definitions align
+      } else {
+         
+      }
+
       boost::container::flat_map<account_name, pair<double, bool /*new*/> > producer_deltas;
       if ( voter->last_vote_weight > 0 ) {
          if( voter->proxy ) {
@@ -219,8 +226,9 @@ namespace eosiosystem {
 
       _voters.modify( voter, 0, [&]( auto& av ) {
          av.last_vote_weight = new_vote_weight;
-         av.producers = producers;
-         av.proxy     = proxy;
+         av.last_vote_time   = now();
+         av.producers        = producers;
+         av.proxy            = proxy;
       });
    }
 
